@@ -1,0 +1,41 @@
+name: Propose upstream updates
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Merge upstream into candidate branch
+        id: merge
+        run: |
+          git remote add upstream https://github.com/kota-zo/myspoti.git
+          git fetch upstream main
+          git checkout -B automation/upstream-sync origin/main
+          if git merge --no-commit --no-ff upstream/main; then
+            if git diff --cached --quiet; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+            else
+              git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "chore: sync upstream"
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            git merge --abort || true
+            echo "::warning::Upstream conflicts require manual resolution"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Push candidate and open PR (never auto-merge)
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git push --force-with-lease origin HEAD:refs/heads/automation/upstream-sync
+          gh pr create --base main --head automation/upstream-sync --title "Review upstream Myspoti updates" --body "Review carefully before merging. No APK publication." || echo "PR already exists or needs manual creation."
