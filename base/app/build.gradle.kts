@@ -90,7 +90,7 @@ android {
             // beta on the test phone without replacing the signed beta installed there.
             if (findProperty("overDev") != null) {
                 applicationIdSuffix = ".dev"
-                manifestPlaceholders["appLabel"] = "Myspoti dev"
+                manifestPlaceholders["appLabel"] = "Aura Eclipse Dev"
             }
             isMinifyEnabled = true
             isShrinkResources = true
