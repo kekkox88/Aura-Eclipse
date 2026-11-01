@@ -1,0 +1,45 @@
+name: Prepare signed APK (manual, no publication)
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Beta version, e.g. 0.1.0-beta.1"
+        required: true
+        default: "0.1.0-beta.1"
+permissions:
+  contents: read
+defaults:
+  run:
+    working-directory: base
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-37.0 build-tools;36.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Decode signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.AURA_ECLIPSE_KEYSTORE_BASE64 }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]] || exit 1
+          test -n "$KEYSTORE_B64" || { echo "::error::Signing key secret missing"; exit 1; }
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/aura-eclipse.jks"
+      - name: Compile signed APK
+        env:
+          MYSPOTI_KEYSTORE: ${{ runner.temp }}/aura-eclipse.jks
+          MYSPOTI_KEYSTORE_PASSWORD: ${{ secrets.AURA_ECLIPSE_KEYSTORE_PASSWORD }}
+          MYSPOTI_KEY_ALIAS: ${{ secrets.AURA_ECLIPSE_KEY_ALIAS }}
+          MYSPOTI_KEY_PASSWORD: ${{ secrets.AURA_ECLIPSE_KEY_PASSWORD }}
+          VERSION: ${{ inputs.version }}
+        run: ./gradlew assembleRelease -PappVersionName="$VERSION" -PappVersionCode="$((1000 + GITHUB_RUN_NUMBER))"
+      - name: Check signed output
+        run: test -s app/build/outputs/apk/release/app-release.apk
+      # Deliberately no artifact upload, release creation, deployment or push.
