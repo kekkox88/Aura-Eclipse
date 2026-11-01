@@ -25,7 +25,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Myspoti"
+rootProject.name = "Aura Eclipse"
 include(":app")
 include(":api")
 include(":extensions")
