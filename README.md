@@ -1,6 +1,6 @@
 # Aura Eclipse
 
-Questo repository è un fork di [MySpoti](https://github.com/kota-zo/myspoti). L’estensione audio **Aura Eclipse · Nuvola 4.5.0 (Build 384)** è documentata nel [repository dell’estensione](https://github.com/kekkox88/Aura-Eclipse-Extension).
+Questo repository è un fork di [MySpoti](https://github.com/kota-zo/myspoti). L’estensione audio **Aura Eclipse · Nuvola 6.0.8 (Build 614)** è documentata nel [repository dell’estensione](https://github.com/kekkox88/Aura-Eclipse-Extension). Scarica il pacchetto dalla [release dell’estensione](https://github.com/kekkox88/Aura-Eclipse-Extension/releases/tag/v6.0.8).
 
 ## MySpoti upstream
 
